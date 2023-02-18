@@ -1,0 +1,227 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{scribe}
+\usepackage{listings}
+
+\Scribe{Course Team}
+\Lecturer{Abir De}
+\LectureNumber{9}
+\LectureDate{February 10, 2023}
+\LectureTitle{Non Separable - Support Vector Machine}
+
+\lstset{style=mystyle}
+
+\begin{document}
+	\MakeScribeTop
+
+%#############################################################
+%#############################################################
+%#############################################################
+%#############################################################
+
+%This is some warmup discussion before the first section.
+
+\section{Revision}
+
+\subsection{Classification Problem}
+
+Our dataset is of the form $\mathcal{D}=\{(x_i,y_i)\}_{i=1}^N$. 
+
+\noindent The $x_i$ are data points, usually in $\mathbb{R}^k$ for some $k \in \mathbb{N}$ and  $y_i$s are discrete.
+
+\vspace{10pt}
+
+\noindent Goal of Support Vector Machine is to create the best line or decision boundary that can segregate n-dimensional space into classes so that we can easily put the new data point in the correct category in the future. This best decision boundary is called a \textbf{hyperplane}. 
+
+
+\vspace{10pt}
+
+\noindent SVM can be used for linearly separable as well as non-linearly separable data. Linearly separable data is the hard margin whereas non-linearly separable data poses a soft margin.
+
+%You might like to put use subsectioning these too.  An alternate way to put in a small subheading for a paragraph is to use the \begin{verbatim} \paragraph \end{verbatim} command.  For example:
+
+%\paragraph{A remembrance by Dantzig.}  The early days were full of intense excitement. Scientists, free at last from war-time pressures, entered the post-war period hungry for new areas of research. The computer came on the scene at just the right time. Economists and mathematicians were intrigued with the possibility that the fundamental problem of optimal allocation of scarce resources could be numerically solved. Not too long after my first meeting with Tucker there was a meeting of the Econometric Society in Wisconsin attended by well-known statisticians and mathematicians like Hotelling and von Neumann, and economists like Koopmans. I was a young unknown and I remember how frightened I was at the idea of presenting for the first time to such a distinguished audience, the concept of linear programming.
+
+
+\subsection{Separable Case of SVM}
+This is applicable when there is no overlap between data points. In such a scenario, we will be able to classify the data points perfectly such that the resultant classification error is zero.   
+
+
+
+\vspace{4pt}
+
+
+$$\mathbf{w}^Tx + \mathbf{b} > 1 \; \Rightarrow \; y=+1$$
+$$\mathbf{w}^Tx + \mathbf{b} < -1 \; \Rightarrow \; y=-1$$
+
+\noindent For these two classes we need to train 2 parameters w \& b to correctly classifying a training dataset.
+
+
+\vspace{4pt}
+
+
+\noindent Both the classes can be divided by a hyperplane. The convex hull of the positive and the negative points do not intersect. We want a function $\psi$ which can solve:
+$$\{\mathbf{w}^*,\mathbf{b}^*\}=argmin \; \mathbf{\psi(w,b)} \;\; : \;\; \forall i \in \mathbb{D}\;\; y_i({\mathbf{w}^*}^Tx_i+\mathbf{b}^*) > 1$$
+
+
+\vspace{5pt}
+
+
+\noindent This gives us the loss function:
+
+  $$\{\mathbf{w}^*,\mathbf{b}^*\}=argmin \; ||\mathbf{w}||^2\;\; : \;\;\forall i \in \mathbb{D}\;\; y_i(\mathbf{w}^Tx_i+\mathbf{b}) > 1$$
+
+\vspace{10pt}
+
+  \noindent We have two different classes in the picture below. There is a maximum margin between the data points of the two classes. Optimal hyperplane nearly lies between the two classes.
+
+
+
+  
+  \newpage
+
+\myfig{.35}{SVM.png}{Separable SVM Classification}{fig:my-example}
+
+
+
+
+\vspace{-30pt}
+
+
+\section{Non-Separable SVM}
+In many real-life cases, the given sample may not be linearly separable and thus we will not have an optimal hyperplane perfectly dividing the hyperplane. There might be an overlap in the convex hull of the negative and the positive points. There does not exist a  $\boldsymbol{w}$ such that $y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) > 1$  satisfies for all the data points of our interest.
+
+
+\vspace{-15pt}
+
+
+\myfig{.3}{Overlapping Clusters.png}{Non-Separable SVM Classification}{fig:my-example}
+
+\vspace{-35pt}
+
+\subsection{Removing the outliers}
+
+
+\noindent Excluding the \textit{outliers} to reduce the problem to separable-SVM might lead to a significant loss in data. It will hamper classification results and give us a poor model, this is clear when we consider the case shown below.
+
+\myfig{.25}{overlap.png}{Overlapping SVM classes}{fig:my-example}
+
+
+
+\newpage
+
+\subsection{Maximise the margin}
+Another process could be to \textbf{maximize the margin}. The
+Margin is given as %\[\frac{1}{2}\] \
+\[\frac{\boldsymbol{w}^T(\boldsymbol{x_+}-\boldsymbol{x_{-}})}{||\boldsymbol{w}||}}
+
+\noindent This margin should be high for all $\x_{i}$. We are worried only about the points where this margin term attains a very low value. We can change our bias such that our $\boldsymbol{w}$
+is not affected, so the problem
+
+\[\frac{\boldsymbol{w}^T(\boldsymbol{x_+}-\boldsymbol{x_{-}})}{||\boldsymbol{w}||}} \approx \[\frac{\boldsymbol{\delta_{+}-\delta_{-}}}{||\boldsymbol{w}||}}\]
+
+\vspace{5pt}
+
+\noindent We know that  $\boldsymbol{\delta_{+}} \approx +1$ while $\boldsymbol{\delta_{-}} \approx -1 $
+
+
+
+\noindent This gives the target optimization to be \[max(\frac{2}{||\boldsymbol{w}||}})\]
+
+\subsection{Introduction of Relaxation}
+\
+The best way to get around such a scenario is to introduce relaxation in our constraints by introducing a parameter 
+ \textbf{$\xi$}. Initial assumptions, such as that of the Separable Support Vector Machine problem, will cause trouble here. The parameter is introduced so that every point satisfies the condition: 
+
+ \[
+         y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) \geq 1-{\xi}_{(x_i, y_i)}
+    \]
+
+\noindent Reasoning and mathematics of this scenario are discussed extensively in the sections ahead.
+
+\section{Mathematical Understanding of Soft-SVM}
+We know our initial assumptions will cause trouble here. Thus as mentioned above, a slackness parameter $\xi_{x,y}$ is introduced so that all the points satisfy the variable condition:
+ \[
+         y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) \geq 1-{\xi}_{(x_i, y_i)}
+    \]
+where $\xi_{x,y} \geq 0$. To optimize the function, we need to \textbf{minimize} $\xi_{x,y}$. This gives us:
+\begin{gather*}
+        \displaystyle \min_{\boldsymbol{w},\; b,\; \xi_{( \boldsymbol{x}_i, y_i)}}{||\boldsymbol{w}||^2+\psi\sum_{i \in D}{\xi}_{(x_i, y_i)_+}}
+     \end{gather*}
+
+\noindent If $y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) > 1$ , the point is correctly classified and $1-y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) < 0$, otherwise if $y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) < 1$, then $1-y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b) > 0$. So we can use ${\xi}_{(x_i, y_i)} = max(1-y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b))$ . This has been done since we  want $\xi_{x_{i},y_{i}} = 0$ for optimal points as they perfectly fall in a class and thus don't come inside other function's convex hull.
+
+\vspace{20pt}
+
+\noindent Minimizing $\psi\sum_{i}{\xi}_{(x_i, y_i)}$ results in the following relation:
+
+ \begin{gather*}
+        \min_{\boldsymbol{w},\; b}{(||\boldsymbol{w}||^2+\psi\sum_{i \in \mathcal{D}}ReLU(1-y_i(\boldsymbol{w}^T\boldsymbol{x_i}+b))}
+    \end{gather*}
+
+\noindent Increasing $\psi$ might lead to over-fitting as the classes would be well separated.
+
+
+
+\section{Dual Formulation} 
+
+\subsection{Convex Optimization}
+Some background in convex optimization is needed before we move forward with our new formulation of SVM. 
+
+\begin{gather*}
+    \min_{\boldsymbol{\theta}} f(\boldsymbol{\theta}) \textrm{ such that } g(\boldsymbol(\theta) \leq \boldsymbol{r} 
+\end{gather*}
+
+\noindent Note that $g(\boldsymbol{\theta})$ can be a vector and then the inequality would be pointwise ($g_i(\theta) \leq r_i$) \\ 
+We can approximate the above equation as:
+\begin{gather}
+    \max_{\boldsymbol{\lambda} \geq 0}\min_{\boldsymbol{\theta}} f(\boldsymbol{\theta}) + \boldsymbol{\lambda}^\top(g(\boldsymbol{\theta})-\boldsymbol{r}) \label{eq:1}
+\end{gather}
+
+\noindent When $f(\boldsymbol{\theta})$ and $g(\boldsymbol{\theta})$ both are strictly convex, the above two equations are exactly equivalent. This means that either $\boldsymbol{\lambda}=0 $ or $g\boldsymbol{(\theta)=\psi}$. This is known as Slater's condition.
+
+\subsection{Objective Function}
+SVM problem at hand:
+\begin{gather*}
+    \min_{\boldsymbol{w},b,{\xi}} \lambda || \boldsymbol{w} ||^2 + \sum_{i \in \mathcal{D}} \xi_i \\
+    \text{Constraints: } y_i(\boldsymbol{w}^\top \boldsymbol{x_i}+b) \geq 1-\xi_i \; \text{ and } \; \xi_i \geq 0 \quad \forall i \in \mathcal{D}
+\end{gather*}
+Rewriting constraints as $ 1-\xi_i- y_i(\boldsymbol{w}^\top\boldsymbol{x_i}+b) \leq 0\; \text{ and} -\xi_i \leq 0$
+to make them of the form $g(w) \leq c$. \\
+Using convex optimisation of~\eqref{eq:1} we rewrite our formulation as: 
+\begin{gather*}
+    \max_{\boldsymbol{\alpha}, \boldsymbol{\beta}} \min_{\boldsymbol{w},b,{\xi}} \lambda || \boldsymbol{w} ||^2 + \sum_{i \in \mathcal{D}} \xi_i + \sum_{i \in \mathcal{D}} \alpha_i(1-\xi_i-y_i(\boldsymbol{w}^\top\boldsymbol{x_i}+b)) + \sum_{i \in \mathcal{D}} \beta_i(-\xi_i) \\
+    \text{s.t. } \alpha_i \geq 0, \beta_i \geq 0  \; \; \forall i \in \mathcal{D}
+\end{gather*}
+This is our final optimisation problem in dual space and the function to be maximised is called Lagrangian dual function $g(\boldsymbol{\alpha,\beta})$. \\Note : $\lambda$ used here is different from the $\lambda$ used in~\eqref{eq:1} of convex optimisation. 
+
+\subsection{Optimality Conditions}
+Differentiating $g(\boldsymbol{\alpha,\beta})$ w.r.t $\boldsymbol{w},b,\xi_i$ and equating to 0, we get:
+\begin{gather*}
+    \begin{aligned}\frac{\partial g}{\partial \boldsymbol{w}}=0 & \Rightarrow 2\lambda\boldsymbol{w^*}+\sum_{i \in \mathcal{D}} \alpha_i(-y_i\boldsymbol{x_i})=0 \\
+    & \Rightarrow \boldsymbol{w^*}=\sum_{i \in \mathcal{D}}\frac{\alpha_iy_i\boldsymbol{x_i}}{2\lambda} \\
+    \frac{\partial g}{\partial b}=0 & \Rightarrow \sum_{i \in \mathcal{D}}\alpha_iy_i=0 \\
+    \frac{\partial g}{\partial \xi_i}=0 & \Rightarrow 1-\alpha_i-\beta_i=0 \\ 
+    & \Rightarrow \alpha_i+\beta_i=1 \quad \forall i \in \mathcal{D} \\ 
+    \end{aligned}
+\end{gather*}
+We also see that our objective function is quadratic in $\boldsymbol{w}$ and constraints are linear in $\boldsymbol{w},\xi_i$. Therefore, all functions are strictly convex and we can apply Slater's condition. Therefore,
+\begin{gather*}
+    \begin{aligned}
+        \alpha_i^*(1-\xi_i^*-y_i(\boldsymbol{w^{*\top}}\boldsymbol{x_i}+b^*))=&0 \quad \forall i \in \mathcal{D}\\
+    \beta_i^*\xi_i^*=&0 \quad \forall i \in \mathcal{D}
+    \end{aligned}
+\end{gather*}
+This gives the following 2 cases:
+\begin{enumerate}
+    \item $\xi_i^* > 0 \Rightarrow$ point is incorrectly classified or it is inside the margin of hyperplanes\\
+    $\Rightarrow \beta_i^*=0 \Rightarrow \alpha_i^*=1$.\\ $\alpha_i^*$ being high can be seen as penalty being high, which intuitively means that the point is misclassified.  
+    \item $\xi_i = 0 \Rightarrow$ point is on or outside the margin of hyperplanes\\
+    If $1-y_i(\boldsymbol{w^{*\top}}\boldsymbol{x_i}+b^*) > 0 \Rightarrow \alpha_i^* =0 \Rightarrow \beta_i^* =1$.
+    This means that the penalty is low and the point is correctly classified.\\
+    If $1-y_i(\boldsymbol{w^{*\top}}\boldsymbol{x_i}+b^*) = 0$, then we cannot comment anything about $\alpha_i^*$.
+\end{enumerate}
+
+\end{document}
