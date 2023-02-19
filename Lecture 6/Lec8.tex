@@ -1,0 +1,228 @@
+\documentclass[10pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{scribe}
+\usepackage{listings}
+\usepackage{amsmath,amsfonts,amssymb}
+
+% \Scribe{Azeem Motiwala , Shreyas Grampurohit, Disha Lalwani, Harsheet Singh}
+\Scribe{Group 12}
+\Lecturer{Abir De}
+\LectureNumber{6}
+\LectureDate{1 February 2023}
+\LectureTitle{Wrapping up Regression and Intro to Classification}
+
+\lstset{style=mystyle}
+
+\begin{document}
+	\MakeScribeTop
+
+\section{Recap and Introduction}
+
+\large{ \textbf{Q: How to decide which model will perform best on the Test data?}}\\
+ Ans: To decide which machine learning model will perform best on test data, there are several steps you can follow:
+ \begin{itemize}
+
+\item \textbf{Data preparation:} Ensure that your data is properly preprocessed and cleaned.
+
+\item \textbf{Model selection:} Select those sets of models that are suitable for your problem and that have a good reputation for performance on similar problems.
+
+\item \textbf{Model evaluation:} Use techniques such as cross-validation to evaluate the performance of each model on the training data.
+
+\item \textbf{Model comparison:} Compare the performance of each model on the validation data and choose the one with the best performance.
+
+\item \textbf{Hyperparameter tuning:} Fine-tune the hyperparameters of the chosen model to further improve its performance.
+
+\item \textbf{Final evaluation:} Evaluate the final model on a test dataset, which should be separate from the training and validation data, to get an estimate of its performance on unseen data.
+ 
+ \end{itemize}
+
+Lets take a quick look over Hyperparameter tuning and Cross Validation 
+
+\subsection{Hyperparameter Tuning}
+
+\begin{itemize}
+    \item Hyperparameter tuning is the process of systematically searching for the best combination of hyperparameters for a machine learning model to optimize its performance on a given task. Hyperparameters are parameters that are set prior to training a model and have a significant impact on its performance. 
+    \item The goal of hyperparameter tuning is to find the hyperparameters that result in the best performance on the validation data. This is typically done through a search algorithm, such as grid search or random search, that explores different combinations of hyperparameters and selects the best one based on some performance metric. 
+\end{itemize}
+
+\subsection{Cross-Validation}
+\begin{itemize}
+    \item Cross-validation is a technique in machine learning used to evaluate the performance of a model. It involves dividing the available data into training and validation sets, and then training the model on the training data and evaluating its performance on the validation data. This process is repeated multiple times with different partitions of the data to get a more robust estimate of the model's performance.
+
+    \item The main purpose of cross-validation is to prevent overfitting, which is when a model is too closely fit to the training data, leading to poor performance on unseen data. By evaluating the model on multiple validation sets, cross-validation provides a more realistic estimate of its generalization performance.
+\end{itemize}
+
+\section{Wrapping up Regression}
+
+Let's say we have a dataset $D$. We now split this dataset into two parts. One is the training set which will call as $D1$ and the other is cross-validation set which we call as $D/D1$. Suppose we do this random splitting of training and cross-validation set $N$ times such that each time we will have a different training and cross-validation set.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Dataset} & \textbf{Training Set} & \textbf{Cross-Validation Set} \\ [0.5ex]
+\hline
+$D$ & $D1$ & $D/D1$\\
+\hline
+$D$ & $D2$ & $D/D2$\\
+\hline
+$.$ & . & .\\
+$.$ & . & .\\
+\hline
+$D$ & $DN$ & $D/DN$\\
+\hline
+\end{tabular}
+\caption{Dataset Splitting}
+\end{table}
+
+\noindent
+Let's say we have a regularised cost function that has a hyperparameter $\lambda$
+
+\noindent
+$$J(w) = \frac{1}{2m} \sum\limits_{  \textbf{x},y \in D \notag} (w^T \textbf{x} - y)^2  + \frac{\lambda}{2m}  \sum_{j=0}^{n-1} {(w_j)}^{2}$$ \\
+\noindent
+Now lets calculate error on Cross Validation set \\
+\noindent
+$$ e(D/D_i,\lambda) = \frac{1}{2m} \sum\limits_{  \textbf{x},y \in D/D_i \notag} (w_{D_i\lambda}^T \textbf{x} - y)^2 $$ \\ 
+\noindent
+For hyper parameter tuning, we do a grid search over different values of $\lambda$ and then take the model which gives minimum error on the Validation set. But now we have N different types of validation sets but we do hyperparameter tuning only on one validation set and choose the hyperparameter such that it gives the least error on the cross-validation set.
+\newpage
+\noindent
+\textbf{Q. How do we use those N-1 validation sets while doing hyperparameter tuning?}\\
+\noindent
+Ans: 
+\begin{itemize}
+    \item We first will create a list of values of hyperparameter which we are going to use for hyperparameter tuning. Assume that the list of hyperparameter $\lambda$ is the following: \\
+            $$\lambda = [0.1,0.2,........10]$$
+    \item Now lets say we have chosen $\lambda$ to be 0.1 . For this value of lambda, we are going to train our model using different training datasets which we created earlier ( $D_1, D_2 ... D_N$ ).
+    \item After training our model with a different dataset, we will evaluate the error for each cross-validation set for $\lambda$ = 0.1. We calculate the following:
+        $$ e(D/D_i,\lambda) = \frac{1}{2m} \sum\limits_{  \textbf{x},y \in D/D_i \notag} (w_{D_i\lambda})^T \textbf{x} - y)^2 $$ \\ 
+    When we have i = 1, means we are training the model with training dataset $D_1$ and then calculating cross-validation error on the cross-validation set $D/D_1$. Note that this we are doing for a particular value of $\lambda$, which in this case is 0.1.
+    \item Now as we are getting N number of cross-validation errors, So we will take the expectation of all the errors for a particular value of $\lambda$, which in this case is 0.1. We will calculate the following for each value of $\lambda$ which is there in our list.
+        $$ e(\lambda) = E(e(D_i,\lambda)) $$
+    \item The best-fit lambda would be the one that will give the minimum expectation of error. 
+        $$ \lambda^* = \lambda $$  
+        such that we have
+            $$ \min(e(\lambda))$$
+        where $\lambda^*$ is the best choice of $\lambda$
+    \item This way we will get the best choice of $\lambda$, but now we are stuck with one problem. For a particular value of $\lambda$, we had N values of parameter \textbf{w}. \\
+        \begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Training Set} & \textbf{w} \\ [0.5ex]
+\hline
+$D1$ & $w_{D_1}(\lambda)$\\
+\hline
+$D2$ & $w_{D_2}(\lambda)$\\
+\hline
+ . & .\\
+ . & .\\
+\hline
+$DN$ & $w_{D_N}(\lambda)$\\
+\hline
+\end{tabular}
+\caption{Parameter}
+\end{table}\\
+ $w_{D_1}(\lambda)$  means we trained the model with the dataset $D_1$ using hyperparameter value $\lambda$.
+ \item Now as we got our best fit $\lambda$ to be equal to $\lambda^*$, we will have N number of values of parameter \textbf{w} to choose from. So which value of \textbf{w} should we use for our model ?
+\item
+Let's assume that we have our dataset $D$ to be very large ( roughly around 1 billion entries ).\\\\
+We define a quantity $w^t$ which is the true parameter \textbf{w} for our dataset, meaning the \textbf{w} from which the dataset was originally sampled. We define the error $\delta$ to be equal to the modulus of difference between true parameter $w^t$ and $w_{D_i\lambda}$ 
+    $$ \delta = || w_{D_i\lambda} - w^t || $$
+\noindent
+According to the maximum likelihood of estimates or the law of large numbers one can prove, that for a very large dataset 
+    
+         $$   || w_{D_i\lambda} - w^t || < \epsilon $$
+\noindent
+Let's define another quantity $\Delta$, which is the modulus of difference between $w_{D_m\lambda}$ and $w_{D_k\lambda}$
+
+    $$ \Delta = || w_{D_m\lambda} - w_{D_k\lambda}|| $$
+\noindent
+We can easily prove that if the original dataset is very large,
+
+      $$  || w_{D_m\lambda} - w_{D_k\lambda}|| < 2\epsilon $$    
+\noindent
+This provides us with a conclusion that for any particular $\lambda$, we can choose any parameter $w_{D_i\lambda}$, as the difference between any two parameters is always less than 2$\epsilon$. We can choose any w from the following list for the best fit $\lambda$.
+
+    $$ w = [w_{D_1\lambda},w_{D_2\lambda} ...... w_{D_N\lambda}] $$
+\end{itemize}
+
+\noindent
+\textbf{\large{Q. If we increase our regularizer parameter, what changes would be affected in $\delta$ and $\Delta$ ?}}
+Ans: We can think of $\delta$ as the bias of our model as it takes the difference between true and predicted parameters. Also, we can think of $\Delta$ as the variance of the model as it takes the difference between two different parameters which were trained by two different datasets.
+Now if we increase the value of the regularizer, the weights of the parameter will reduce. As a result, $\delta$ will increase and $\Delta$ will decrease. This means that on increasing the value of the regularizer, bias increases and the variance decreases. This is known as the \textbf{bias-variance trade-off}.
+\\
+\\
+\textbf{Stability}: Change in the model, when we change one point or one training sample in our dataset. On increasing the value of the regularizer, the stability of the model increases.
+
+\newpage
+\section{Classification}
+\subsection{Introduction}
+Consider the following problem setting:
+\begin{itemize}
+\item Given data points: \textbf{$x_i$}, i = 1,2,3,....,m
+\item Given k possible class choices: $\{C_1, C_2, C_3,....., C_k\}$
+\item We wish to estimate a mapping/classifier
+\begin{equation*}
+f: X \rightarrow \{C_1, C_2, C_3,....., C_k\}
+\end{equation*}
+that predicts class labels $\hat{y_1}, \hat{y_2}, \hat{y_3}, .... \hat{y_m}$.
+\end{itemize}
+This is a classification problem.\\
+The algorithm which implements the classification on a dataset is known as a classifier. There are two types of classifiers:
+\begin{itemize}
+\item \textbf{Binary Classifier:} If the classification problem has only two possible outcomes, then it is called as Binary Classifier.\\
+\textbf{Examples:} YES or NO, CAT or DOG, SPAM or NOT SPAM
+\item \textbf{Multi-class Classifier:} If a classification problem has more than two outcomes, then it is called as Multi-class Classifier.\\
+\textbf{Examples:} Classifications of types of crops, Classification of types of music.
+\end{itemize}
+
+\subsection{Binary classification problem}
+Consider a binary classification problem:
+\begin{equation*}
+f(x) \in \{-1, 1\}
+\end{equation*}
+We want that any new input pattern similar to a seen pattern is classified correctly.\\\\
+\textbf{Linear Classification}\\
+\textbf{Perceptron} is an algorithm that can be used to classify data that is linearly classifiable.
+Perceptron function f(x) can be achieved as output by taking the dot product of the input 'x' with the learned weight coefficient vector 'w'.\\
+Mathematically, we can express it as follows:
+\begin{gather*}
+f(x) = 1; \text{ if     }  \mathbf{w}^\intercal \mathbf{x} + \mathbf{b} > 0\\
+f(x)= -1; \text{ otherwise}
+\end{gather*}
+\begin{itemize}
+\item $\mathbf{w}$ represents real-valued weights vector
+\item $\mathbf{b}$ represents the bias
+\item $\mathbf{x}$ represents a vector of input x values
+\end{itemize}
+\newpage
+\myfig{0.5}{linear_classifier}{Example of a linear classifier}{fig:my-example}
+\noindent Note that perceptron does not necessarily find the best separating hyperplane, it finds any one. However, in the figure \ref{fig:my-example}, we can clearly see that the hyperplane 1 is better than 2 and 3.
+\\\\\\
+\noindent
+\textbf{Support Vector Machine Algorithm}\\
+The goal of the SVM algorithm is to create the best line or decision boundary that can segregate n-dimensional space into classes so that we can easily put the new data point in the correct category in the future. This best decision boundary is called a hyperplane.\\
+SVM chooses the extreme points/vectors that help in creating the hyperplane. These extreme cases are called as support vectors, and hence algorithm is termed as Support Vector Machine. Consider the figure \ref{fig:svm} in which there are two different categories that are classified using a decision boundary or hyperplane:
+\myfig{0.4}{svm.png}{Support Vector Machine}{fig:svm}
+\newpage
+Distance of the decision boundary from any point $\mathbf{x}$:
+\begin{equation*}
+\Delta = \frac{|\mathbf{w}^\intercal \mathbf{x} + \mathbf{b}|}{\|\mathbf{w}\|}  
+\end{equation*}
+So, we need to minimize $\|\mathbf{w}\|$ such that 
+\begin{equation*}
+y(\mathbf{w}^\intercal \mathbf{x} + \mathbf{b}) \ge \delta \; \forall (\mathbf{x}, y).
+\end{equation*}
+Here $y \in \{-1, 1\}$ is the label. If the point lies on the correct side of the hyperplane, $y(\mathbf{w}^\intercal \mathbf{x} + \mathbf{b})$ will be positive.\\
+How should we select $\delta$ here?
+The optimization problem above becomes equivalent to\\
+\begin{align*}
+    & \min_{\mathbf{w}, \mathbf{b}}  &&  \|\mathbf{w}\|^2  && \notag \\
+    & \text{such that}     &&  y(\mathbf{w}^\intercal \mathbf{x} + \mathbf{b}) \ge 1 && \forall (\mathbf{x}, y) \notag \\
+\end{align*}
+This is the support vector machine algorithm.
+\end{document}
