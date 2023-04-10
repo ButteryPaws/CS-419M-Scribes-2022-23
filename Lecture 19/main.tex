@@ -1,0 +1,152 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{scribe}
+\usepackage{listings}
+
+\Scribe{Group 21 }
+\Lecturer{Abir De}
+\LectureNumber{19}
+\LectureDate{31/03/2023}
+\LectureTitle{}
+\setlength{\parindent}{0pt}
+\lstset{style=mystyle}
+
+\begin{document}
+	\MakeScribeTop
+
+%#############################################################
+%#############################################################
+%#############################################################
+%#############################################################
+
+\section{Recap}
+Consider the following process :
+\begin{equation}
+    y=w^T\phi(x) + \epsilon 
+\end{equation}
+where $\epsilon \sim \mathcal{N}(0,\sigma^2)$, $\w \sim \mathcal{N}(0,\Sigma_p)$ is a $d$ X $1$ weight vector, and $\phi(x)$ is the $d$ x $1$ feature vector, then the probability of observing $y^*$ given $x^*$ and D, where D = \{$(x_i,y_i) | i=1,2,...,n$ \} is given by:  \\
+\begin{equation*}
+   P(y^*|x^*,D) \sim \mathcal{N}(\mu_{y^*},\sigma_{y^*}^2)
+\end{equation*}
+\begin{equation}
+   \mu_{y^*} = \phi(x^*)^T\left[\dfrac{\Phi\Phi^T}{\sigma^2}+ \Sigma_p^{-1}\right]^{-1}\dfrac{\Phi y}{\sigma^2}    
+\end{equation}
+\begin{equation}
+    \mu_{y^*} = \phi(x^*)^T\Sigma_p \Phi (\Phi \Sigma_p \Phi + \sigma^2 I)^{-1}y
+\end{equation}
+
+Note that these two expressions of $\mu_{y^*}$ will be equal only when both the inverses exist
+\begin{equation}
+    \sigma_{y^*}^2 = \phi(x^*)^T \left[\Sigma_p - \Sigma_p \Phi(\Phi^T \Sigma_p \Phi + \sigma^2 I)^{-1}\Phi^T \Sigma_p\right]\phi(x^*)+\sigma^2 
+\end{equation}
+Recall ,\begin{equation*}
+    \mu_{A|B} = \mu_A + \Sigma_{AB}\Sigma_{BB}^{-1}(y_B-\mu_B)
+\end{equation*} 
+Hence here $\mu_A=\mu_B = 0$ ,\hspace{2mm}  $\Sigma_{AB} = \phi(x^*)^T\Sigma_p\Phi$ ,\hspace{2mm}  $\Sigma_{BB}=\Phi^T\Sigma_p\Phi $\\
+
+For $\sigma$ = 0 we have shown that,\vspace{-5mm}
+\begin{equation}
+    \mu_{y^*} = y_i \hspace{5mm} if \hspace{2mm} (x^*,y^*) = (x_i,y_i) 
+\end{equation}
+
+
+%--------------------------------------------------------------------
+
+
+\section{Analyzing the Variance}
+
+Similar to calculation of $\mu_{y^*} $, for $\sigma =0\hspace{1mm} and\hspace{1mm} (x^*,y^*) = (x_i,y_i) $,
+\begin{equation*}
+    \sigma_{y^*}^2 = \phi(x^*)^T \Sigma_p \phi(x^*)- \phi(x^*)^T\Sigma_p \Phi(\Phi^T \Sigma_p \Phi + \sigma^2 I)^{-1}\Phi^T \Sigma_p\phi(x^*)
+\end{equation*}
+    As shown in previous lectures , $\phi(x^*)^T\Sigma_p \Phi(\Phi^T \Sigma_p \Phi + \sigma^2 I)^{-1}$ = $[1\hspace{1mm} 0\hspace{1mm} 0 .. 0]$ , when $(x^*,y^*) \in D$
+\begin{equation*}
+    \implies \sigma_{y^*}^2 = \phi(x^*)^T \Sigma_p \phi(x^*) - [1\hspace{1mm} 0\hspace{1mm} 0 .. 0] \Phi^T \Sigma_p\phi(x^*)
+\end{equation*}
+\vspace{-2mm}    
+\begin{equation*}
+    \implies \sigma_{y^*}^2 = \phi(x^*)^T \Sigma_p \phi(x^*) -  \phi(x^*)^T \Sigma_p \phi(x^*)    
+\end{equation*}
+\vspace{-2mm}
+\begin{equation*}
+    \implies \sigma_{y^*}^2 = 0
+\end{equation*}
+
+Similarly we can also show that if $(x^*,y^*)$ are such that,
+\begin{equation}
+    \phi(x^*) = \Sigma \alpha_i \phi(x_i) \hspace{2.5mm},\hspace{2.5mm} y^*=\Sigma \alpha_i y_i \hspace{2.5mm},\hspace{2.5mm} then \hspace{2mm}\sigma_{y^*} = 0
+\end{equation}
+\section{Finding Variance of Gaussian process when the data belongs to the training data itself}
+We have to find \hspace{1mm}  $ \sigma_{y^*}^2 \hspace{1.5mm} of \hspace{1.5mm} P(y^*|x^*,D)$ \hspace{1.5mm} for $x^*=x_i$
+
+We know that, 
+\begin{equation*}
+    \sigma_{y^*}^2 = \phi(x^*)^T \left[\Sigma_p - \Sigma_p \Phi(\Phi^T \Sigma_p \Phi + \sigma^2 I)\Phi^T \Sigma_p\right]\phi(x^*)+\sigma_^2
+\end{equation*}
+\begin{equation*}
+    
+    \hspace{0cm}
+   \Sigma_p - \Sigma_p \Phi(\Phi^T \Sigma_p \Phi + \sigma^2 I) =\Sigma_p-\Sigma_p \phi(I+\sigma^2(\Phi^T \Sigma_p \Phi)^{-1})^{-1} (\Phi^T \Sigma_p \Phi)^{-1} \Phi^T \Sigma_p
+\end{equation*}
+
+\begin{equation*}
+    \hspace{1.8cm}
+    =\Sigma_p-\Sigma_p \phi(I-\sigma^2(\Phi^T \Sigma_p \Phi)^{-1}) (\Phi^T \Sigma_p \Phi)^{-1} \Phi^T \Sigma_p
+\end{equation*}
+
+\begin{equation*}
+    \hspace{2.8cm}
+    =\Sigma_p -  \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-1} \Phi^T \Sigma_p +\sigma^2 \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-2} \Phi^T \Sigma_p
+\end{equation*}
+Hence,
+\begin{equation*}
+\sigma_{y^*}^2=\Phi(x^*)^T \Sigma_p \Phi(x^*) -  \Phi(x^*)^T \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-1} \Phi^T \Sigma_p \Phi(x^*)+\sigma^2 
+ \Phi(x^*)^T \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-2} \Phi^T \Sigma_p \Phi(x^*) + \sigma^2
+\end{equation*}
+\begin{equation*}
+    \Phi(x^*)^T \Sigma_p \Phi(x^*) -  \Phi(x^*)^T \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-1} \Phi^T \Sigma_p \Phi(x^*)=0 \hspace{20mm} for \hspace{1.5mm} x^* = x_i
+\end{equation*}
+
+ Hence,
+\begin{equation*}
+\hspace{-8cm}
+\sigma_{y^*}^2=\sigma^2 
+  \Phi(x^*)^T \Sigma_p \Phi (\Phi^T \Sigma_p \Phi)^{-2} \Phi^T \Sigma_p \Phi(x^*) + \sigma^2
+
+\hspace{0.6cm}  = 2\sigma^2 
+
+\end{equation*}
+\section{Writing the above variance in terms of kernel function}
+Let 
+\begin{equation*}
+  \hspace{-8cm}  
+  \phi(x^*)^T \Sigma_p \Phi  = K(x^*,x) 
+    
+  \hspace{1.8cm} \Phi^T \Sigma_p \Phi=K(X,X)=K
+\end{equation*}
+
+Hence,
+\begin{equation*}
+    \sigma_{y^*}^2 = K(x^*,x+\sigma^2 - K(x^*,x)[K+\sigma^2 I]^{-1} K(x,x^*) y
+\end{equation*}
+
+
+%-------------------------------------------------------------------
+\section{Some points to think about}
+
+If $\sigma$ $\neq 0$ then for what instance the variance $\sigma_{y^*}$ will be least?\\
+
+
+Lets say we have $x_1 , x_2 ,....., x_{1million}$ unlabelled points.
+$x'_1,x'_2, ... , x'_{1000}$ are labelled as $y'_1,y'_2, ... , y'_{1000}$.
+Using these we want to pick some $x_{i's}$ for labelling , but which ones to pick, because picking all of them is not practically possible?\\
+
+\hspace{5mm} We will want those $x_{i's}$ which are dissimilar with the given $x_{j's}$. Hence they will have more variance. Therefore we find low variance $x_{i's}$ and just label them using nearest neighbour and discard them from getting picked up to label the hard way.
+
+
+
+
+%%%%%%%%%%% end of doc
+\end{document}
