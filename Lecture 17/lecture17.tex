@@ -1,0 +1,227 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{scribe}
+\usepackage{listings}
+
+\Scribe{Harshit, Samyak, Satush}
+\Lecturer{Abir De}
+\LectureNumber{17}
+\LectureDate{24th March, 2023}
+\LectureTitle{Interpolation and Regression revisited}
+
+\lstset{style=mystyle}
+
+\begin{document}
+	\MakeScribeTop
+
+%#############################################################
+%#############################################################
+%#############################################################
+%#############################################################
+
+\section{Introduction}
+
+\noindent This is a brief recap of the results of the previous lecture on interpolation.\\
+
+\noindent Conditional Gaussian distribution:
+Consider the joint distribution between vectors $x_1$ and $x_2$:
+$$
+\begin{bmatrix}
+y_A \\
+y_B
+\end{bmatrix} \sim \mathcal{N}\left(
+\begin{bmatrix}
+\mu_A \\
+\mu_B
+\end{bmatrix},
+\begin{bmatrix}
+\boldsymbol{\Sigma}_{AA} & \boldsymbol{\Sigma}_{AB} \\
+\boldsymbol{\Sigma}_{BA} & \boldsymbol{\Sigma}_{BB}
+\end{bmatrix}
+\right)
+$$
+We are interested in the conditional distribution, which itself is Gaussian:
+$$
+y_A | y_B \sim \mathcal{N}\left(\boldsymbol{\mu}_{A|B}, \boldsymbol{\Sigma}_{A|B}\right)
+$$
+where
+$$
+\boldsymbol{\mu}_{A|B} = \boldsymbol{\mu}_A + \boldsymbol{\Sigma}_{AB} \boldsymbol{\Sigma}_{BB}^{-1} (y_B - \boldsymbol{\mu}_B)
+$$
+$$
+\boldsymbol{\Sigma}_{A|B} = \boldsymbol{\Sigma}_{AA} - \boldsymbol{\Sigma}_{AB} \boldsymbol{\Sigma}_{BB}^{-1} \boldsymbol{\Sigma}_{BA}
+$$
+
+\noindent Product of Gaussian distributions:
+Consider the two distributions:
+$$
+p_1(x) = \mathcal{N}(x; \mu_1, \boldsymbol{\Sigma}_1), \quad p_2(x) = \mathcal{N}(x; \mu_2, \boldsymbol{\Sigma}_2)
+$$
+The product is an un-normalised Gaussian:
+$$
+p_1(x)p_2(x) \propto \mathcal{N}(x; \mu, \boldsymbol{\Sigma})
+$$
+where
+$$
+\boldsymbol{\mu} = \boldsymbol{\Sigma}(\boldsymbol{\Sigma}_1^{-1} \boldsymbol{\mu}_1 + \boldsymbol{\Sigma}_2^{-1} \boldsymbol{\mu}_2)
+$$
+$$
+\boldsymbol{\Sigma} = (\boldsymbol{\Sigma}_1^{-1} + \boldsymbol{\Sigma}_2^{-1})^{-1}
+$$
+\section{Linear Regression}
+
+\noindent Consider the supervised training data of $n$ samples, each with an observation $\bold{x_i}$ and output $y_i$. The regression function $f(\bold{x})$ is linear if defined as
+$$f(\bold{x}) = \bold{w}^T\phi(\bold{x})$$
+and the target value has Gaussian noise so that
+$$y(\bold{x}) = f(\bold{x}) + \epsilon$$
+where
+\[\epsilon \sim \mathcal{N}(0, \sigma^2)\]
+
+\noindent For a given value of $w$, the likelihood of the outputs can be expressed as
+$$p(y_1, \dots, y_n | x_1, \dots, x_n, \bold{w}) = \prod_{i=1}^{n} p(y_i | x_i, w) = \mathcal{N}(\bold{y}; \bold{\Phi}^T\bold{w}, \sigma^2 I)$$
+where $I$ is the $n \times n$ identity matrix and
+$$\bold{\Phi} = \begin{bmatrix} \phi(\bold{x_1}) & \cdots & \phi(\bold{x_n}) \end{bmatrix}, \quad \bold{y} = \begin{bmatrix} y_1 \\ \vdots \\ y_n \end{bmatrix}$$
+
+\noindent The value of optimum $\bold{w}^*$ can then be found by maximizing this likelihood. This is equivalent to minimizing the least squares cost function
+$$\min_{\bold{w}} \sum_{i=1}^{n} (y_i - \bold{w}^T\phi(\bold{x_i}))^2 = \min_{\bold{w}} \| \bold{y} - \bold{\Phi}^T\bold{w} \|^2$$
+
+\noindent which gives us the following result (derived in a previous lecture):
+
+\[\bold{w}^* = (\bold{\Phi}\bold{\Phi}^T)^{-1}\bold{\Phi}\bold{y}\]
+
+\section{Weight Vector Prior}
+
+\noindent Now consider a prior distribution over $\bold{w}$ given by the Gaussian:
+\[\bold{w} \sim \mathcal{N}(0,\bold{\Sigma}_p)\]
+
+\noindent The result now becomes:
+
+\[\bold{w}^* = \left(\frac{\bold{\Phi}\bold{\Phi}^T}{\sigma^2}+\bold{\Sigma}_p^{-1}\right)^{-1}\frac{\bold{\Phi}\bold{y}}{\sigma^2}\]
+
+\noindent We can confirm this intuitively by the following 2 checks:
+\begin{itemize}
+    \item For the $\sigma^2$ outside the bracket: if $\sigma^2$ is large, that means y has a lot of noise so we should discard the data point. Clearly the weights become very small for such a data point.
+    \item For the $\sigma^2$ inside the bracket: if we are discarding the data points as in the above point, the weights shouldn't depend on x, thus it is also divided by $\sigma^2$.
+\end{itemize}
+
+\section{Interpolation and Regression}
+
+From the previous setting, lets say we have observed the points $\mathcal{D} = (\bold{x_i},y_i)_{i=1}^N$.\\
+
+\noindent Now let us try to find out the distribution of $y^*|\{\bold{x}^*,(\bold{x_i},y_i)_{i=1}^N\}$, or $y^*|\{\bold{x}^*,\mathcal{D}\}$, where $(\bold{x}^*,y^*)$ is a new unobserved point.\\
+
+\noindent \textbf{FACT}: The distribution will be a Gaussian, hence we just need to find the mean and variance.
+
+\noindent Since the distribution is a Gaussian, the mean and the mode will be the same. Now we know that the mode is the following (by maximum likelihood estimate done in the previous sections):
+\[\hat{y}^* = \bold{w}^{*T}\phi(\bold{x}^*) = \phi(\bold{x}^*)^T\bold{w}^*\]
+where $\bold{w}^*$ is as shown in Section 3. Hence:
+\[\hat{y}^* = \phi(\bold{x}^*)^T\left(\frac{\bold{\Phi}\bold{\Phi}^T}{\sigma^2}+\bold{\Sigma}_p^{-1}\right)^{-1}\frac{\bold{\Phi}\bold{y}}{\sigma^2}\]
+
+\noindent Thus we have found the mean of the distribution:
+\[y^*|\{\bold{x}^*,\mathcal{D}\} \sim \mathcal{N}(\hat{y}^*,\bold{\Sigma} = ?)\]
+
+\noindent Is this similar to the formula we derived in the last lecture? Lets see!
+\[\boldsymbol{\mu}_{A|B} = \boldsymbol{\mu}_A + \boldsymbol{\Sigma}_{AB} \boldsymbol{\Sigma}_{BB}^{-1} (y_B - \boldsymbol{\mu}_B)\]
+
+\noindent Here, A is equivalent to $\bold{x}^*$ and B is equivalent to the $y_i$'s in $\mathcal{D}$. Now, $\mu_A$ and $\mu_B$ are both equal to 0 as we do not have any observation and both $y_A$ and $y_B$ are sampled from distributions with mean 0. Thus,
+\[\boldsymbol{\mu}_{A|B} = \boldsymbol{\Sigma}_{AB} \boldsymbol{\Sigma}_{BB}^{-1} y_B\]
+
+\[
+	\bold{\overline y} = \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{pmatrix} = \bold{\Phi}^T \bold{w} + \epsilon
+\]
+
+\noindent Hence, 
+
+\[
+	\begin{split}
+		\mathbb{E} [\bold{y y}^T] &=   \bold{\Phi}^T \mathbb{E}[\bold{w w}^T] \bold{\Phi} + \mathbb{E}[\epsilon \epsilon^T] \\
+		&= \bold{\Phi}^T \bold{\Sigma}_p \bold{\Phi} + \sigma^2 I \\
+	\end{split}
+	.\]
+\noindent Here, $\mathbb{E}[\bold{y y}^T]$ denotes the covariance matrix and row $x^*$ and column $1, 2, \ldots N$ of the covariance will be $\bold{\Sigma}_{AB}$. Therefore, 
+\[
+\begin{split}
+	y_{A\mid B} &= \bold{\Sigma}_{AB} \bold{\Sigma}_{BB} \bold{y}_B \\
+		    &=  [\phi(x^*)^T \bold{\Sigma}_p \bold{\Phi}][\bold{\Phi}^T \bold{\Sigma}_p \bold{\Phi} + \sigma^2 I]^{-1} \bold{\overline y} \\
+\end{split}
+\]
+\noindent We define $ \textbf{K}$ as $\bold{\Phi}^T \bold{\Sigma}_p \bold{\Phi}$\\
+
+\noindent It is important to note that we simply can't take the inverse of $\bold{\Phi}$ as $\bold{\Phi}$ is not a square matrix.
+\begin{theorem}
+    Let $A = \frac{\bold{\Phi}\bold{\Phi}^T}{\sigma^2}+\bold{\Sigma}_p^{-1}$, then
+    
+ 	\[
+ 	A \bold{\Sigma}_p \bold{\Phi} = \frac{1}{\sigma^2}\bold{\Phi}\left( \textbf{K} + \sigma^2 I \right) 
+ 	\]
+\end{theorem}
+
+\begin{proof}
+	\[
+	\begin{split}
+		\frac{1}{\sigma^2}\bold{\Phi}\left(  \textbf{K} + \sigma^2 I \right)&= \frac{1}{\sigma^2}\bold{\Phi}\left( \bold{\Phi}^T \bold{\Sigma}_p \bold{\Phi} + \sigma^2 I \right) \\								   &= \frac{\bold{\Phi} \bold{\Phi}^T \bold{\Sigma}_p \bold{\Phi}}{\sigma^2} + \bold{\Sigma}_p^{-1} \bold{\Sigma}_p \bold{\Phi} \\
+										   &= \left( \frac{\bold{\Phi} \bold{\Phi}^T}{\sigma^2} + \bold{\Sigma}_p^{-1} \right)\bold{\Sigma}_p \bold{\Phi}  \\
+	\end{split}
+		\]
+\end{proof}
+
+\noindent Therefore, we have
+
+\[
+	\begin{split}
+		\frac{1}{\sigma^2}\bold{\Phi}\left(  \textbf{K} + \sigma^2 I \right) &= A \bold{\Sigma}_p \bold{\Phi} \\
+		\implies \frac{1}{\sigma^2}A^{-1} \bold{\Phi} &= \bold{\Sigma}_p \bold{\Phi} \left( \bold{K} + \sigma^2 I \right)^{-1} \\
+	\end{split}
+.\]
+Therefore, 
+
+\[
+\begin{split}
+ \frac{1}{\sigma^2}\phi(x^*)^T A^{-1} \bold{\Phi} \bold{\overline y} &=\phi(x^*)^T  \bold{\Sigma}_p \bold{\Phi} \left(  \textbf{K} + \sigma^2 I \right)^{-1} \bold{\overline y}\\
+  &= y_{A\mid B}\\
+\end{split}
+\] 
+
+
+\noindent This proves that in linear regression also we are interpolating. But how is this possible? The answer lies in a small assumption we have made.\\
+
+\noindent The matrix $A$ (from regression formula) is always invertible. If $\sigma^2 = 0$ then the formula has $\bold{K}^{-1}$ (for the interpolation- $y_{A\mid B}$ case). Dimension of $\bold{\Phi}$ is $d*N$, where d is the dimension of the feature set $\phi$. Thus, K is a reduced rank matrix for $d<N$ and isn't invertible. Hence the analogy of both being the same fails. So, for the analogy to work, $d$ should be greater than \textbf{any} $N$, that means it should be infinite.\\
+
+\noindent This means we have assumed that K is invertible, or if $\sigma^2 = 0$, $\phi$ is of infinite dimension!\\
+
+\noindent We will prove that the Variance is also the same in both cases in the next lecture.
+
+% If the weights vector has a Gaussian prior then
+% $p(y|X, w) = N(y; X'w, \sigma^2_nI)$
+% $w \sim N(0, \sigma^2_wI)$
+
+% The distribution of the weights can then be written as
+% $\log(p(w|y, X)) \propto -\frac{1}{2\sigma^2_n}(y - X'w)'(y - X'w) - \frac{1}{2\sigma^2_w}w'w$
+
+% As both are Gaussian distributed
+% $p(w|y, X) = N(w; \mu_w, \Sigma_w)$
+
+% where
+% $\mu_w = (\frac{1}{\sigma^2_n}XX'^{-1} + \frac{1}{\sigma^2_w}I)^{-1}Xy$
+% $\Sigma_w = (\frac{1}{\sigma^2_n}XX'^{-1} + \frac{1}{\sigma^2_w}I)^{-1}$
+% Note: as $\sigma^2_w \rightarrow \infty$, then $\mu_w \rightarrow w_{ML}$ the ML estimate.
+% This has so far only considered the training.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Finally, if you have citations, see the commented-out stuff in the \LaTeX~here.
+
+% \
+
+% My farourive Optimization books are \cite{bertsimas1997introduction} \cite{boyd2004convex} \cite{wolsey2014integer}. You should add bibliographical notes in the \textbf{BibTex}: \textit{mybib.bib} file. Its good to grab these notes from Google scholar citations.
+
+% %%%%%%%%%%% If you don't have citations then comment the lines below:
+% %
+% \bibliographystyle{abbrv}           % if you need a bibliography
+% \bibliography{mybib}                % assuming yours is named mybib.bib
+
+
+%%%%%%%%%%% end of doc
+\end{document}
